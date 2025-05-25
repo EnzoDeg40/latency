@@ -23,13 +23,21 @@ model = LatencyModel()
 model.load_state_dict(torch.load("latency_model_torch.pt"))
 model.eval()
 
-# Test
-message = "Toi aussi tu vas à la brocante ?"
-time = 234
-text_vec = embedder.encode(message)
-time_vec = encode_time(time)
-full_vec = np.concatenate([text_vec, time_vec])
-x = torch.tensor(full_vec, dtype=torch.float32)
-with torch.no_grad():
-    pred = model(x)
-    print(f"Latence prédite : {round(pred.item())} minutes")
+while True:
+    try:
+        message = input("Entrez un message (ou 'exit' pour quitter) : ")
+        if message.lower() == 'exit':
+            break
+        time = int(input("Entrez l'heure (en minutes depuis minuit) : "))
+    except ValueError:
+        print("Entrée invalide. Veuillez réessayer.")
+        continue
+
+    text_vec = embedder.encode(message)
+    time_vec = encode_time(time)
+    full_vec = np.concatenate([text_vec, time_vec])
+    x = torch.tensor(full_vec, dtype=torch.float32)
+
+    with torch.no_grad():
+        pred = model(x)
+        print(f"Latence prédite : {round(pred.item())} minutes")
