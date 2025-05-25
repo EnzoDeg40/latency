@@ -19,14 +19,19 @@ def encode_time(t):
 
 class LatencyDataset(Dataset):
     def __init__(self, data):
+        messages = [d["message"] for d in data]
+        times = [encode_time(d["time"]) for d in data]
+        latencies = [d["latency"] for d in data]
+
+        text_embeddings = embedder.encode(messages, batch_size=64, convert_to_numpy=True)
+
         self.X = []
         self.y = []
-        for d in data:
-            text_vec = embedder.encode(d["message"])
-            time_vec = encode_time(d["time"])
+
+        for text_vec, time_vec, latency in zip(text_embeddings, times, latencies):
             full_vec = np.concatenate([text_vec, time_vec])
             self.X.append(torch.tensor(full_vec, dtype=torch.float32))
-            self.y.append(torch.tensor([d["latency"]], dtype=torch.float32))
+            self.y.append(torch.tensor([latency], dtype=torch.float32))
 
     def __len__(self):
         return len(self.X)
